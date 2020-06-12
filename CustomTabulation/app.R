@@ -68,7 +68,7 @@ ui <- fluidPage(
                 c("Estimate", "Margin of Error")
             ),
             
-            # Button
+            # download button
             uiOutput("downloadData")
             
             # # select number or percentage
