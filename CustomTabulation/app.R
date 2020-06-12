@@ -24,7 +24,7 @@ raw_data_state_1W <- read.csv("1W/state__EEO_10_5YR_EEOALL1W_Data.csv", colClass
 ui <- fluidPage(
     
     # App title ----
-    titlePanel("Uploading Files"),
+    titlePanel("Shiny Appl for Custom Tab"),
     
     # Sidebar layout with input and output definitions ----
     sidebarLayout(
@@ -67,6 +67,9 @@ ui <- fluidPage(
                 "Table type",
                 c("Estimate", "Margin of Error")
             ),
+            
+            # Button
+            uiOutput("downloadData")
             
             # # select number or percentage
             # radioButtons(
@@ -197,9 +200,9 @@ server <- function(input, output, session) {
         
     })
     
-    # Create output table
     
-    output$final_output <- renderTable({
+    # creat output table
+    datasetOutput <- function(){
         req(input$tab_name)
         
         # get our data table
@@ -382,7 +385,7 @@ server <- function(input, output, session) {
         
         
         ################################################################### FUNCTIONS FOR GENDER HORIZONTAL ROWS
-
+        
         
         # output Total, both sexes total
         # only obtain number
@@ -800,9 +803,37 @@ server <- function(input, output, session) {
                 missing_text = 0
             )
         
-        dt
-        
+        return(dt)
+    }
+    
+    
+    # Create output table
+    
+    output$final_output <- renderTable({
+        datasetOutput()
     })
+    
+    
+    # downloadable csv of selected dataset
+    # download button only appears after the dataset is ready
+    
+    output$downloadData <- renderUI({
+        req(input$tab_name, datasetOutput())
+        downloadButton("downloadData01")
+    })
+    
+    output$downloadData01 <- downloadHandler(
+        
+        req(input$tab_name),
+        
+        filename = function() {
+            f_name <- paste(input$tab_name, input$geo, input$geo_spec, input$est_mar, sep = "_")
+            return (paste(f_name, ".csv", sep = ""))
+        },
+        content = function(file) {
+            write.csv(datasetOutput(), file, row.names = FALSE)
+        }
+    )
     
 }
 # Run the app ----
